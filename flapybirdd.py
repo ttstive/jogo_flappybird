@@ -10,6 +10,17 @@ geracao = 0
 TELA_LARGURA = 570
 TELA_ALTURA = 954
 
+pygame.mixer.init()
+pygame.mixer.music.load("music/Kamado Tanjiro no Uta [8-Bit Cover] Kimetsu no Yaiba (320).mp3")
+pygame.mixer.music.set_volume(0.2)
+pygame.mixer.music.play(-1)
+
+voar = pygame.mixer.Sound("efeitos_sonoros/mixkit-boxing-punch-2051.wav")
+voar.set_volume(0.1)
+perdeu = pygame.mixer.Sound("efeitos_sonoros/mixkit-arcade-retro-game-over-213.wav")
+ganhou_ponto = pygame.mixer.Sound("efeitos_sonoros/mixkit-bonus-earned-in-video-game-2058.wav")
+selecionar = pygame.mixer.Sound("efeitos_sonoros/mixkit-arcade-game-jump-coin-216.wav")
+
 IMAGEM_BEGIN = (pygame.image.load(os.path.join('Imagens', 'tela_begin.jpg')))
 IMAGEM_END = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde.jpg')))
 IMAGEM_END_NO = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde_no.jpg')))
@@ -30,6 +41,7 @@ IMAGENS_PASSARO = [
 pygame.font.init()
 caminho_fonte = os.path.join('fonts', 'PixelOperator8.ttf')
 FONTE_PONTOS = pygame.font.Font(caminho_fonte, 25)
+
 class Passaro:
     IMGS = IMAGENS_PASSARO
     # animações da rotação
@@ -48,19 +60,21 @@ class Passaro:
         self.imagem = self.IMGS[0]
 
     def pular(self, pontuacao):
-        self.velocidade = -10.5
+        self.velocidade = -10.5 * Cano.VELOCIDADE_ATUAL
         self.tempo = 0
         self.altura = self.y
 
         def incrementar():
             if pontuacao % 5 == 0 and pontuacao > 0:
-                self.velocidade += 35
+                self.velocidade += 5
+                self.tempo += 2
 
         thread = threading.Thread(target=incrementar)
         thread.start()
 
         def resetar():
             self.velocidade = -10.5
+            self.tempo = 0
 
         thread = threading.Thread(target=resetar)
         thread.start()
@@ -121,7 +135,8 @@ class Passaro:
 class Cano:
     DISTANCIA = 200
     VELOCIDADE = 5
-    INCREMENTO_VELOCIDADE = 2  # Novo atributo para incrementar a velocidade
+    VELOCIDADE_ATUAL = VELOCIDADE
+    INCREMENTO_VELOCIDADE = 1.5  # Novo atributo para incrementar a velocidade
 
     def __init__(self, x):
         self.x = x
@@ -138,8 +153,21 @@ class Cano:
         self.pos_topo = self.altura - self.CANO_TOPO.get_height()
         self.pos_base = self.altura + self.DISTANCIA
 
+        if Cano.VELOCIDADE_ATUAL > 5 and Cano.VELOCIDADE_ATUAL <= 10:
+            self.altura = random.randrange(50, 400)
+            self.pos_topo = self.altura - self.CANO_TOPO.get_height()
+            self.pos_base = self.altura + self.DISTANCIA
+        elif Cano.VELOCIDADE_ATUAL > 10 and Cano.VELOCIDADE_ATUAL <= 15:
+            self.altura = random.randrange(100, 330)
+            self.pos_topo = self.altura - self.CANO_TOPO.get_height()
+            self.pos_base = self.altura + self.DISTANCIA
+        elif Cano.VELOCIDADE_ATUAL > 15:
+            self.altura = random.randrange(140, 280)
+            self.pos_topo = self.altura - self.CANO_TOPO.get_height()
+            self.pos_base = self.altura + self.DISTANCIA
+
     def mover(self):
-        self.x -= self.VELOCIDADE
+        self.x -= Cano.VELOCIDADE_ATUAL
 
     def desenhar(self, tela):
         tela.blit(self.CANO_TOPO, (self.x, self.pos_topo))
@@ -164,7 +192,7 @@ class Cano:
     def aumentar_velocidade(cls, pontuacao):
         def incrementar():
             if pontuacao % 5 == 0 and pontuacao > 0:
-                cls.VELOCIDADE += cls.INCREMENTO_VELOCIDADE
+                cls.VELOCIDADE_ATUAL += cls.INCREMENTO_VELOCIDADE
 
         thread = threading.Thread(target=incrementar)
         thread.start()
@@ -172,7 +200,7 @@ class Cano:
     @classmethod
     def resetar_velocidade(cls):
         def resetar():
-            cls.VELOCIDADE = 5
+            cls.VELOCIDADE_ATUAL = cls.VELOCIDADE
 
         thread = threading.Thread(target=resetar)
         thread.start()
@@ -208,14 +236,14 @@ def desenhar_tela(tela, passaros, canos, chao, pontos):
     for cano in canos:
         cano.desenhar(tela)
 
-    texto_sombra = FONTE_PONTOS.render(f"Pontuação: {pontos}", True, (0, 0, 0))
-    texto = FONTE_PONTOS.render(f"Pontuação: {pontos}", True, (255, 255, 255))
+    texto_sombra = FONTE_PONTOS.render(f"Pontos: {pontos}", True, (0, 0, 0))
+    texto = FONTE_PONTOS.render(f"Pontos: {pontos}", True, (255, 255, 255))
     tela.blit(texto_sombra, (TELA_LARGURA - 12 - texto.get_width(), 12))
     tela.blit(texto, (TELA_LARGURA - 10 - texto.get_width(), 10))
 
     if ai_jogando:
-        texto_sombra = FONTE_PONTOS.render(f"Geração: {geracao}", True, (0, 0, 0))
-        texto = FONTE_PONTOS.render(f"Geração: {geracao}", True, (255, 255, 255))
+        texto_sombra = FONTE_PONTOS.render(f"Nivel: {geracao}", True, (0, 0, 0))
+        texto = FONTE_PONTOS.render(f"Nivel: {geracao}", True, (255, 255, 255))
         tela.blit(texto_sombra, (12, 12))
         tela.blit(texto, (10, 10))
 
@@ -253,13 +281,17 @@ def tela_pausada(tela):
                 quit()
             elif evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_UP:
+                    selecionar.play()
                     opcao = (opcao - 1) % 4
                 elif evento.key == pygame.K_DOWN:
+                    selecionar.play()
                     opcao = (opcao + 1) % 4
                 elif evento.key == pygame.K_RETURN:
                     if opcao == 1:
+                        pygame.mixer.music.unpause()
                         rodando = False
                     elif opcao == 2:
+                        pygame.mixer.music.stop()
                         return 'restart'
                     elif opcao == 3:
                         pygame.quit()
@@ -289,8 +321,10 @@ def tela_fim(tela, pontos):
                 quit()
             if evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_LEFT:
+                    selecionar.play()
                     escolha = 1
                 elif evento.key == pygame.K_RIGHT:
+                    selecionar.play()
                     escolha = 2
                 elif evento.key == pygame.K_RETURN:
                     if escolha == 1:
@@ -300,6 +334,7 @@ def tela_fim(tela, pontos):
                         quit()
 
 def main(genomas, config):
+    pygame.mixer.music.play()
     global geracao
     geracao += 1
 
@@ -341,7 +376,9 @@ def main(genomas, config):
                     if evento.key == pygame.K_SPACE:
                         for passaro in passaros:
                             passaro.pular(pontos)
+                            voar.play()
                     elif evento.key == pygame.K_p:
+                        pygame.mixer.music.pause()
                         acao = tela_pausada(tela)
                         if acao == 'restart':
                             rodando = False
@@ -379,6 +416,8 @@ def main(genomas, config):
                         lista_genomas.pop(i)
                         redes.pop(i)
                     if not ai_jogando or len(passaros) == 0:
+                        pygame.mixer.music.stop()
+                        perdeu.play()
                         Cano.resetar_velocidade()  # Resetar a velocidade ao colidir com o último pássaro
                 if not cano.passou and passaro.x > cano.x:
                     cano.passou = True
@@ -389,6 +428,7 @@ def main(genomas, config):
 
         if adicionar_cano:
             pontos += 1
+            ganhou_ponto.play()
             canos.append(Cano(600))
             if ai_jogando:
                 for genoma in lista_genomas:
