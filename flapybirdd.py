@@ -103,6 +103,7 @@ class Passaro:
 class Cano:
     DISTANCIA = 200
     VELOCIDADE = 5
+    INCREMENTO_VELOCIDADE = 2  # Novo atributo para incrementar a velocidade
 
     def __init__(self, x):
         self.x = x
@@ -140,6 +141,16 @@ class Cano:
         if topo_ponto or base_ponto:
             return True
         return False
+
+    @classmethod
+    def aumentar_velocidade(cls, pontuacao):
+        if pontuacao % 5 == 0:
+            cls.VELOCIDADE += cls.INCREMENTO_VELOCIDADE
+
+    @classmethod
+    def resetar_velocidade(cls):
+        cls.VELOCIDADE = 5
+
 
 class Chao:
     VELOCIDADE = 5
@@ -310,6 +321,7 @@ def main(genomas, config):
             for i, passaro in enumerate(passaros):
                 if cano.colidir(passaro):
                     passaros.pop(i)
+                    cano.resetar_velocidade()
                     if ai_jogando:
                         lista_genomas[i].fitness -= 1
                         lista_genomas.pop(i)
@@ -327,6 +339,8 @@ def main(genomas, config):
             if ai_jogando:
                 for genoma in lista_genomas:
                     genoma.fitness += 5
+            Cano.aumentar_velocidade(pontos)  # Chamar a função para aumentar a velocidade
+
         for cano in remover_canos:
             canos.remove(cano)
 
