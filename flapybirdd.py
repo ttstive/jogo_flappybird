@@ -4,7 +4,7 @@ import random
 import neat
 import threading
 
-ai_jogando = True
+ai_jogando = False
 geracao = 0
 
 TELA_LARGURA = 570
@@ -153,16 +153,20 @@ class Cano:
         self.pos_topo = self.altura - self.CANO_TOPO.get_height()
         self.pos_base = self.altura + self.DISTANCIA
 
-        if Cano.VELOCIDADE_ATUAL > 5 and Cano.VELOCIDADE_ATUAL <= 10:
+        if Cano.VELOCIDADE_ATUAL > 5 and Cano.VELOCIDADE_ATUAL <= 8:
             self.altura = random.randrange(50, 400)
             self.pos_topo = self.altura - self.CANO_TOPO.get_height()
             self.pos_base = self.altura + self.DISTANCIA
-        elif Cano.VELOCIDADE_ATUAL > 10 and Cano.VELOCIDADE_ATUAL <= 15:
-            self.altura = random.randrange(100, 330)
+        elif Cano.VELOCIDADE_ATUAL >8 and Cano.VELOCIDADE_ATUAL <= 12.5:
+            self.altura = random.randrange(80, 350)
             self.pos_topo = self.altura - self.CANO_TOPO.get_height()
             self.pos_base = self.altura + self.DISTANCIA
-        elif Cano.VELOCIDADE_ATUAL > 15:
-            self.altura = random.randrange(140, 280)
+        elif Cano.VELOCIDADE_ATUAL > 12.5 and Cano.VELOCIDADE_ATUAL <=15.5:
+            self.altura = random.randrange(110, 300)
+            self.pos_topo = self.altura - self.CANO_TOPO.get_height()
+            self.pos_base = self.altura + self.DISTANCIA
+        elif Cano.VELOCIDADE_ATUAL > 15.5:
+            self.altura = random.randrange(140, 250)
             self.pos_topo = self.altura - self.CANO_TOPO.get_height()
             self.pos_base = self.altura + self.DISTANCIA
 
