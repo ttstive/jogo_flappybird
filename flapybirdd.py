@@ -13,7 +13,7 @@ TELA_ALTURA = 954
 pygame.mixer.init()
 pygame.mixer.music.load("music/Kamado Tanjiro no Uta [8-Bit Cover] Kimetsu no Yaiba (320).mp3")
 pygame.mixer.music.set_volume(0.2)
-pygame.mixer.music.play(-1)
+# pygame.mixer.music.play(-1, 2)
 
 voar = pygame.mixer.Sound("efeitos_sonoros/mixkit-boxing-punch-2051.wav")
 voar.set_volume(0.1)
@@ -338,7 +338,7 @@ def tela_fim(tela, pontos):
                         quit()
 
 def main(genomas, config):
-    pygame.mixer.music.play()
+    pygame.mixer.music.play(-1, 2)
     global geracao
     geracao += 1
 
