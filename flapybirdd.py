@@ -4,16 +4,17 @@ import random
 import neat
 import threading
 
-
 ai_jogando = True
 geracao = 0
 
-TELA_LARGURA = 500
-TELA_ALTURA = 800
+TELA_LARGURA = 570
+TELA_ALTURA = 954
 
-IMAGEM_BEGIN = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'tela_begin.jpeg')))
-IMAGEM_END = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'tela_quando_perde.jpeg')))
-IMAGEM_PAUSADO = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'tela_pausado.jpeg')))
+IMAGEM_BEGIN = (pygame.image.load(os.path.join('Imagens', 'tela_begin.jpg')))
+IMAGEM_END = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde.jpg')))
+IMAGEM_END_NO = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde_no.jpg')))
+IMAGEM_END_YES = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde_yes.jpg')))
+IMAGEM_PAUSADO = (pygame.image.load(os.path.join('Imagens', 'tela_pausado.jpg')))
 IMAGEM_CANO = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'pipe.png')))
 IMAGEM_CHAO = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'base.png')))
 IMAGEM_BACKGROUND = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bg.png')))
@@ -25,7 +26,6 @@ IMAGENS_PASSARO = [
 
 pygame.font.init()
 FONTE_PONTOS = pygame.font.SysFont('arial', 50)
-
 
 class Passaro:
     IMGS = IMAGENS_PASSARO
@@ -86,7 +86,6 @@ class Passaro:
             self.imagem = self.IMGS[0]
             self.contagem_imagem = 0
 
-
         # se o passaro tiver caindo eu não vou bater asa
         if self.angulo <= -80:
             self.imagem = self.IMGS[1]
@@ -100,7 +99,6 @@ class Passaro:
 
     def get_mask(self):
         return pygame.mask.from_surface(self.imagem)
-
 
 class Cano:
     DISTANCIA = 200
@@ -117,7 +115,7 @@ class Cano:
         self.definir_altura()
 
     def definir_altura(self):
-        self.altura = random.randrange(50, 450)
+        self.altura = random.randrange(40, 450)
         self.pos_topo = self.altura - self.CANO_TOPO.get_height()
         self.pos_base = self.altura + self.DISTANCIA
 
@@ -143,7 +141,6 @@ class Cano:
             return True
         return False
 
-
 class Chao:
     VELOCIDADE = 5
     LARGURA = IMAGEM_CHAO.get_width()
@@ -167,7 +164,6 @@ class Chao:
         tela.blit(self.IMAGEM, (self.x1, self.y))
         tela.blit(self.IMAGEM, (self.x2, self.y))
 
-
 def desenhar_tela(tela, passaros, canos, chao, pontos):
     tela.blit(IMAGEM_BACKGROUND, (0, 0))
     for passaro in passaros:
@@ -185,8 +181,6 @@ def desenhar_tela(tela, passaros, canos, chao, pontos):
     chao.desenhar(tela)
     pygame.display.update()
 
-
-
 def tela_inicio(tela):
     rodando = True
     while rodando:
@@ -201,7 +195,7 @@ def tela_inicio(tela):
                     rodando = False
 
 def tela_pausada(tela):
-    pausado = False
+    pausado = True
     while pausado:
         tela.blit(IMAGEM_PAUSADO, (0, 0))
         pygame.display.update()
@@ -211,23 +205,39 @@ def tela_pausada(tela):
                 quit()
             if evento.type == pygame.KEYDOWN:  # Verificação de tipo de evento
                 if evento.key == pygame.K_p:  # Verificação da tecla pressionada
-                    pausado = True
+                    pausado = False
+
 
 def tela_fim(tela, pontos):
     fim = True
+    escolha = 0  # 0 para esquerda, 1 para direita
     while fim:
         tela.blit(IMAGEM_END, (0, 0))
         texto = FONTE_PONTOS.render(f"Pontuação: {pontos}", 1, (255, 255, 255))
         tela.blit(texto, (TELA_LARGURA - 10 - texto.get_width(), 10))
+
+        if escolha == 0:
+            tela.blit(IMAGEM_END_YES, (0, 0))
+        else:
+            tela.blit(IMAGEM_END_NO, (0, 0))
+
         pygame.display.update()
+
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-            if evento.type == pygame.KEYDOWN:  # Verificação de tipo de evento
-                if evento.key == pygame.K_r:  # Verificação da tecla pressionada
-                    fim = False
-
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_LEFT:
+                    escolha = 0
+                elif evento.key == pygame.K_RIGHT:
+                    escolha = 1
+                elif evento.key == pygame.K_RETURN:
+                    if escolha == 0:
+                        fim = False
+                    elif escolha == 1:
+                        pygame.quit()
+                        quit()
 
 def main(genomas, config):
     global geracao
@@ -338,7 +348,6 @@ def main(genomas, config):
     if not ai_jogando:
         tela_fim(tela, pontos)
 
-
 def rodar(caminho_config):
     config = neat.config.Config(neat.DefaultGenome,
                                 neat.DefaultReproduction,
@@ -355,9 +364,6 @@ def rodar(caminho_config):
     else:
         while True:
             main(None, None)
-
-
-
 
 if __name__ == '__main__':
     caminho = os.path.dirname(__file__)
