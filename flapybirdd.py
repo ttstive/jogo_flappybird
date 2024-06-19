@@ -4,7 +4,7 @@ import random
 import neat
 import threading
 
-ai_jogando = False
+ai_jogando = True
 geracao = 0
 
 TELA_LARGURA = 570
@@ -15,6 +15,9 @@ IMAGEM_END = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde.jpg')
 IMAGEM_END_NO = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde_no.jpg')))
 IMAGEM_END_YES = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde_yes.jpg')))
 IMAGEM_PAUSADO = (pygame.image.load(os.path.join('Imagens', 'tela_pausado.jpg')))
+IMAGEM_PAUSADO_RESUME = (pygame.image.load(os.path.join('Imagens', 'tela_pausado_resume.jpg')))
+IMAGEM_PAUSADO_RESTART = (pygame.image.load(os.path.join('Imagens', 'tela_pausado_restart.jpg')))
+IMAGEM_PAUSADO_QUIT = (pygame.image.load(os.path.join('Imagens', 'tela_pausado_quit.jpg')))
 IMAGEM_CANO = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'pipe.png')))
 IMAGEM_CHAO = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'base.png')))
 IMAGEM_BACKGROUND = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bg.png')))
@@ -25,8 +28,8 @@ IMAGENS_PASSARO = [
 ]
 
 pygame.font.init()
-FONTE_PONTOS = pygame.font.SysFont('arial', 50)
-
+caminho_fonte = os.path.join('fonts', 'PixelOperator8.ttf')
+FONTE_PONTOS = pygame.font.Font(caminho_fonte, 25)
 class Passaro:
     IMGS = IMAGENS_PASSARO
     # animações da rotação
@@ -44,10 +47,23 @@ class Passaro:
         self.contagem_imagem = 0
         self.imagem = self.IMGS[0]
 
-    def pular(self):
+    def pular(self, pontuacao):
         self.velocidade = -10.5
         self.tempo = 0
         self.altura = self.y
+
+        def incrementar():
+            if pontuacao % 5 == 0 and pontuacao > 0:
+                self.velocidade += 35
+
+        thread = threading.Thread(target=incrementar)
+        thread.start()
+
+        def resetar():
+            self.velocidade = -10.5
+
+        thread = threading.Thread(target=resetar)
+        thread.start()
 
     def mover(self):
         # calcular o deslocamento
@@ -100,6 +116,8 @@ class Passaro:
     def get_mask(self):
         return pygame.mask.from_surface(self.imagem)
 
+
+
 class Cano:
     DISTANCIA = 200
     VELOCIDADE = 5
@@ -144,12 +162,20 @@ class Cano:
 
     @classmethod
     def aumentar_velocidade(cls, pontuacao):
-        if pontuacao % 5 == 0:
-            cls.VELOCIDADE += cls.INCREMENTO_VELOCIDADE
+        def incrementar():
+            if pontuacao % 5 == 0 and pontuacao > 0:
+                cls.VELOCIDADE += cls.INCREMENTO_VELOCIDADE
+
+        thread = threading.Thread(target=incrementar)
+        thread.start()
 
     @classmethod
     def resetar_velocidade(cls):
-        cls.VELOCIDADE = 5
+        def resetar():
+            cls.VELOCIDADE = 5
+
+        thread = threading.Thread(target=resetar)
+        thread.start()
 
 
 class Chao:
@@ -182,11 +208,15 @@ def desenhar_tela(tela, passaros, canos, chao, pontos):
     for cano in canos:
         cano.desenhar(tela)
 
-    texto = FONTE_PONTOS.render(f"Pontuação: {pontos}", 1, (255, 255, 255))
+    texto_sombra = FONTE_PONTOS.render(f"Pontuação: {pontos}", True, (0, 0, 0))
+    texto = FONTE_PONTOS.render(f"Pontuação: {pontos}", True, (255, 255, 255))
+    tela.blit(texto_sombra, (TELA_LARGURA - 12 - texto.get_width(), 12))
     tela.blit(texto, (TELA_LARGURA - 10 - texto.get_width(), 10))
 
     if ai_jogando:
-        texto = FONTE_PONTOS.render(f"Geração: {geracao}", 1, (255, 255, 255))
+        texto_sombra = FONTE_PONTOS.render(f"Geração: {geracao}", True, (0, 0, 0))
+        texto = FONTE_PONTOS.render(f"Geração: {geracao}", True, (255, 255, 255))
+        tela.blit(texto_sombra, (12, 12))
         tela.blit(texto, (10, 10))
 
     chao.desenhar(tela)
@@ -201,22 +231,39 @@ def tela_inicio(tela):
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-            if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_s:
-                    rodando = False
+            elif evento.type == pygame.KEYDOWN:  # Verifica se houve pressionamento de tecla
+                rodando = False  # Se uma tecla foi pressionada, sai do loop
 
 def tela_pausada(tela):
-    pausado = True
-    while pausado:
-        tela.blit(IMAGEM_PAUSADO, (0, 0))
+    rodando = True
+    opcao = 0  # 0 = Resume, 1 = Restart, 2 = Quit
+    while rodando:
+        if opcao == 0:
+            tela.blit(IMAGEM_PAUSADO, (0, 0))
+        elif opcao == 1:
+            tela.blit(IMAGEM_PAUSADO_RESUME, (0, 0))
+        elif opcao == 2:
+            tela.blit(IMAGEM_PAUSADO_RESTART, (0, 0))
+        elif opcao == 3:
+            tela.blit(IMAGEM_PAUSADO_QUIT, (0, 0))
         pygame.display.update()
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-            if evento.type == pygame.KEYDOWN:  # Verificação de tipo de evento
-                if evento.key == pygame.K_p:  # Verificação da tecla pressionada
-                    pausado = False
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_UP:
+                    opcao = (opcao - 1) % 4
+                elif evento.key == pygame.K_DOWN:
+                    opcao = (opcao + 1) % 4
+                elif evento.key == pygame.K_RETURN:
+                    if opcao == 1:
+                        rodando = False
+                    elif opcao == 2:
+                        return 'restart'
+                    elif opcao == 3:
+                        pygame.quit()
+                        quit()
 
 
 def tela_fim(tela, pontos):
@@ -228,6 +275,8 @@ def tela_fim(tela, pontos):
         tela.blit(texto, (TELA_LARGURA - 10 - texto.get_width(), 10))
 
         if escolha == 0:
+            tela.blit(IMAGEM_END, (0, 0))
+        elif escolha == 1:
             tela.blit(IMAGEM_END_YES, (0, 0))
         else:
             tela.blit(IMAGEM_END_NO, (0, 0))
@@ -240,13 +289,13 @@ def tela_fim(tela, pontos):
                 quit()
             if evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_LEFT:
-                    escolha = 0
-                elif evento.key == pygame.K_RIGHT:
                     escolha = 1
+                elif evento.key == pygame.K_RIGHT:
+                    escolha = 2
                 elif evento.key == pygame.K_RETURN:
-                    if escolha == 0:
+                    if escolha == 1:
                         fim = False
-                    elif escolha == 1:
+                    elif escolha == 2:
                         pygame.quit()
                         quit()
 
@@ -291,9 +340,13 @@ def main(genomas, config):
                 if evento.type == pygame.KEYDOWN:
                     if evento.key == pygame.K_SPACE:
                         for passaro in passaros:
-                            passaro.pular()
-                    if evento.key == pygame.K_p:
-                        tela_pausada(tela)
+                            passaro.pular(pontos)
+                    elif evento.key == pygame.K_p:
+                        acao = tela_pausada(tela)
+                        if acao == 'restart':
+                            rodando = False
+                            main(genomas, config)
+                            return
 
         indice_cano = 0
         if len(passaros) > 0:
@@ -312,7 +365,7 @@ def main(genomas, config):
                                             abs(passaro.y - canos[indice_cano].altura),
                                             abs(passaro.y - canos[indice_cano].pos_base)))
                 if output[0] > 0.5:
-                    passaro.pular()
+                    passaro.pular(pontos)
         chao.mover()
 
         adicionar_cano = False
