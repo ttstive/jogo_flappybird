@@ -4,7 +4,7 @@ import random
 import neat
 import threading
 
-ai_jogando = True
+ai_jogando = False
 geracao = 0
 
 TELA_LARGURA = 570
@@ -321,11 +321,12 @@ def main(genomas, config):
             for i, passaro in enumerate(passaros):
                 if cano.colidir(passaro):
                     passaros.pop(i)
-                    cano.resetar_velocidade()
                     if ai_jogando:
                         lista_genomas[i].fitness -= 1
                         lista_genomas.pop(i)
                         redes.pop(i)
+                    if not ai_jogando or len(passaros) == 0:
+                        Cano.resetar_velocidade()  # Resetar a velocidade ao colidir com o último pássaro
                 if not cano.passou and passaro.x > cano.x:
                     cano.passou = True
                     adicionar_cano = True
@@ -355,6 +356,8 @@ def main(genomas, config):
             if ai_jogando:
                 lista_genomas.pop(i)
                 redes.pop(i)
+            if not ai_jogando or len(passaros) == 0:
+                Cano.resetar_velocidade()  # Resetar a velocidade ao colidir com o último pássaro
 
         desenhar_tela(tela, passaros, canos, chao, pontos)
 
