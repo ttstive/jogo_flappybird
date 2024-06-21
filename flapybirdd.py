@@ -3,8 +3,9 @@ import os
 import random
 import neat
 import threading
+import time
 
-ai_jogando = False
+ai_jogando = True
 geracao = 0
 
 TELA_LARGURA = 570
@@ -22,6 +23,7 @@ ganhou_ponto = pygame.mixer.Sound("efeitos_sonoros/mixkit-bonus-earned-in-video-
 selecionar = pygame.mixer.Sound("efeitos_sonoros/mixkit-arcade-game-jump-coin-216.wav")
 
 IMAGEM_BEGIN = (pygame.image.load(os.path.join('Imagens', 'tela_begin.jpg')))
+IMAGEM_PONTUACAO = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde_pontos.jpg')))
 IMAGEM_END = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde.jpg')))
 IMAGEM_END_NO = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde_no.jpg')))
 IMAGEM_END_YES = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde_yes.jpg')))
@@ -85,8 +87,8 @@ class Passaro:
         deslocamento = 1.5 * (self.tempo**2) + self.velocidade * self.tempo
 
         # restringir o deslocamento
-        if deslocamento > 16:
-            deslocamento = 16
+        if deslocamento > 14:
+            deslocamento = 14
         elif deslocamento < 0:
             deslocamento -= 2
 
@@ -302,7 +304,17 @@ def tela_pausada(tela):
                         quit()
 
 
+def tela_pontuacao(tela, pontos):
+    tela.blit(IMAGEM_PONTUACAO, (0, 0))
+    texto_sombra = FONTE_PONTOS.render(f"PONTOS: {pontos}", 1, (0, 0, 0))
+    texto = FONTE_PONTOS.render(f"PONTOS: {pontos}", 1, (255, 255, 224))
+    tela.blit(texto_sombra, (TELA_LARGURA - 182 - texto.get_width(), 563))
+    tela.blit(texto, (TELA_LARGURA - 180 - texto.get_width(), 561))
+    pygame.display.update()
+    time.sleep(7)
+
 def tela_fim(tela, pontos):
+    tela_pontuacao(tela, pontos)
     fim = True
     escolha = 0  # 0 para esquerda, 1 para direita
     while fim:
@@ -445,8 +457,15 @@ def main(genomas, config):
         # Verificar se o pássaro colide com o chão ou vai para fora da tela
         passaros_a_remover = []
         for i, passaro in enumerate(passaros):
-            if (passaro.y + passaro.imagem.get_height()) > chao.y or passaro.y < 0:
+            if ai_jogando and (passaro.y + passaro.imagem.get_height()) > chao.y or passaro.y < 0:
                 passaros_a_remover.append(i)
+                if len(passaros) == 0:
+                    pygame.mixer.music.stop()
+                    perdeu.play()
+            elif not ai_jogando and (passaro.y + passaro.imagem.get_height()) > chao.y or passaro.y < 0:
+                passaros_a_remover.append(i)
+                pygame.mixer.music.stop()
+                perdeu.play()
 
         for i in reversed(passaros_a_remover):
             passaros.pop(i)
