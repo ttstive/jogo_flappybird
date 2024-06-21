@@ -5,7 +5,7 @@ import neat
 import threading
 import time
 
-ai_jogando = True
+ai_jogando = False
 geracao = 0
 
 TELA_LARGURA = 570
@@ -17,7 +17,7 @@ pygame.mixer.music.set_volume(0.2)
 # pygame.mixer.music.play(-1, 2)
 
 voar = pygame.mixer.Sound("efeitos_sonoros/mixkit-boxing-punch-2051.wav")
-voar.set_volume(0.1)
+voar.set_volume(0.2)
 perdeu = pygame.mixer.Sound("efeitos_sonoros/mixkit-arcade-retro-game-over-213.wav")
 ganhou_ponto = pygame.mixer.Sound("efeitos_sonoros/mixkit-bonus-earned-in-video-game-2058.wav")
 selecionar = pygame.mixer.Sound("efeitos_sonoros/mixkit-arcade-game-jump-coin-216.wav")
@@ -311,7 +311,7 @@ def tela_pontuacao(tela, pontos):
     tela.blit(texto_sombra, (TELA_LARGURA - 182 - texto.get_width(), 563))
     tela.blit(texto, (TELA_LARGURA - 180 - texto.get_width(), 561))
     pygame.display.update()
-    time.sleep(7)
+    time.sleep(5)
 
 def tela_fim(tela, pontos):
     tela_pontuacao(tela, pontos)
