@@ -3,7 +3,7 @@ import os
 import random
 import neat
 
-AI_jogando = True
+AI_jogando = False
 geracao = 0
 TELA_LARGURA = 500
 TELA_ALTURA = 800
@@ -17,8 +17,8 @@ IMAGENS_PASSARO = [
     pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird3.png'))),
 ]
 
-IMAGEM_TELA_INICIO = pygame.image.load(os.path.join('Imagens', 'inicio.png'))
-IMAGEM_TELA_GAME_OVER = pygame.image.load(os.path.join('Imagens', 'end.png'))
+IMAGEM_TELA_INICIO = pygame.image.load(os.path.join('Imagens', 'inicio.jpg'))
+IMAGEM_TELA_GAME_OVER = pygame.image.load(os.path.join('Imagens', 'tela_quando_perde.jpg'))
 
 IMAGEM_TELA_INICIO = pygame.transform.scale(IMAGEM_TELA_INICIO, (TELA_LARGURA, TELA_ALTURA))
 IMAGEM_TELA_GAME_OVER = pygame.transform.scale(IMAGEM_TELA_GAME_OVER, (TELA_LARGURA, TELA_ALTURA))
