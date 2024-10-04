@@ -19,6 +19,9 @@ dados3 = pd.read_csv("dados_genomas3.csv")
 dados1 = pd.read_csv("dados_genomas1.csv")
 dados5 = pd.read_csv("dados_genomas4.csv")
 dados6 = pd.read_csv("dados_genomas5.csv")
+dados7 = pd.read_csv("dados_genomas7.csv")
+dados8 = pd.read_csv("dados_genomas8.csv")
+dados9 = pd.read_csv("dados_genomas9.csv")
 
 # Adicionando uma coluna para identificar o tamanho da população
 dados['Pop_Size'] = '3'
@@ -27,14 +30,19 @@ dados3['Pop_Size'] = '50'
 dados1['Pop_Size'] = '10'
 dados5['Pop_Size'] = '30'
 dados6['Pop_Size'] = '40'
+dados7['Pop_Size'] = '17'
+dados8['Pop_Size'] = '25'
+dados9['Pop_Size'] = '60'
 
 # Combinando todos os dados em DataFrames únicos
 dados_combined = pd.concat([dados, dados2, dados3])
 dados_combined2 = pd.concat([dados1, dados5, dados6])
+dados_combined3 = pd.concat([dados7, dados8, dados9])
 
 # Definindo a melhor geração com base no Fitness
 melhor_geracao = dados_combined[dados_combined['Fitness'] == dados_combined['Fitness'].max()]['Geracao'].values[0]
 melhor_geracao2 = dados_combined2[dados_combined2['Fitness'] == dados_combined2['Fitness'].max()]['Geracao'].values[0]
+melhor_geracao3 = dados_combined3[dados_combined3['Fitness'] == dados_combined3['Fitness'].max()]['Geracao'].values[0]
 
 # Criando gráficos de dispersão
 fig = px.scatter(dados_combined, x='Geracao', y='Fitness', color='Pop_Size',
@@ -71,8 +79,25 @@ fig2.update_layout(
     height=800
 )
 
+fig3 = px.scatter(dados_combined3, x='Geracao', y='Fitness', color='Pop_Size',
+                  title="Dispersão de Fitness por Tamanho da População",
+                  hover_data=['Pop_Size'],
+                  labels={'Geracao': 'Gerações', 'Fitness': 'Fitness'},
+                  color_discrete_map={'17': 'cyan', '25': 'purple', '60': 'orange'})
+
+fig3.add_trace(go.Scatter(x=[melhor_geracao3], y=[dados_combined3['Fitness'].max()],
+                          mode='markers', marker=dict(color='gold', size=15),
+                          name='Melhor Geração'))
+
+fig3.update_layout(
+    xaxis_title="Gerações",
+    yaxis_title="Fitness",
+    width=1200,
+    height=800
+)
+
 # Dividindo os gráficos lado a lado
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     st.subheader("Dispersão de Fitness por Tamanho da População - Teste 1")
@@ -84,10 +109,16 @@ with col2:
     st.plotly_chart(fig2)
     st.write("Com um simples grafico de dispersão segmentada, podemos identificar a melhot geração em cada teste, e elas não são simétricas")
 
+with col3:
+    st.subheader("Dispersão de Fitness por Tamanho da População - Teste 3")
+    st.plotly_chart(fig3)
+    st.write("###")
+
 # Adicionando o indicador
 melhor_fitness1 = dados_combined['Fitness'].max()
 melhor_fitness2 = dados_combined2['Fitness'].max()
-diferenca_fitness = melhor_fitness1 - melhor_fitness2
+melhor_fitness3 = dados_combined3['Fitness'].max()
+diferenca_fitness = melhor_fitness1 - melhor_fitness2 - melhor_fitness3
 
 st.header("Comparação de Melhores Gerações")
 st.metric(label="Diferença no Melhor Fitness", value=diferenca_fitness)
