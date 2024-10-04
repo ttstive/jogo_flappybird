@@ -1,3 +1,4 @@
+from enum import global_str
 from logging import fatal
 from math import trunc
 from os import write
@@ -16,18 +17,29 @@ TELA_LARGURA = 570
 TELA_ALTURA = 954
 
 pygame.mixer.init()
-pygame.mixer.music.load("music/Kamado Tanjiro no Uta [8-Bit Cover] Kimetsu no Yaiba (320).mp3")
-pygame.mixer.music.set_volume(0.2)
+pygame.mixer.music.load("music/The Most Powerful Chicken.mp3")
+pygame.mixer.music.set_volume(0.8)
 # pygame.mixer.music.play(-1, 2)
 
 voar = pygame.mixer.Sound("efeitos_sonoros/mixkit-boxing-punch-2051.wav")
-voar.set_volume(0.2)
+voar.set_volume(0.15)
 perdeu = pygame.mixer.Sound("efeitos_sonoros/mixkit-arcade-retro-game-over-213.wav")
+perdeu.set_volume(0.7)
 ganhou_ponto = pygame.mixer.Sound("efeitos_sonoros/mixkit-bonus-earned-in-video-game-2058.wav")
+ganhou_ponto.set_volume(0.5)
 selecionar = pygame.mixer.Sound("efeitos_sonoros/mixkit-arcade-game-jump-coin-216.wav")
+selecionar.set_volume(0.6)
 
 IMAGEM_BEGIN = (pygame.image.load(os.path.join('Imagens', 'inicio.jpg')))
 IMAGEM_BEGIN_ESCOLHA = (pygame.image.load(os.path.join('Imagens', 'inicio_escolha.jpg')))
+IMAGEM_BEGIN_ESCOLHA_JOGAR = (pygame.image.load(os.path.join('Imagens', 'inicio_escolha_jogar.jpg')))
+IMAGEM_BEGIN_ESCOLHA_PLAY = (pygame.image.load(os.path.join('Imagens', 'inicio_escolha_play.jpg')))
+IMAGEM_BEGIN_ESCOLHA_SKINS = (pygame.image.load(os.path.join('Imagens', 'inicio_escolha_skins.jpg')))
+IMAGEM_BEGIN_SKINS = (pygame.image.load(os.path.join('Imagens', 'inicio_skins.jpg')))
+IMAGEM_BEGIN_SKINS_PADRAO = (pygame.image.load(os.path.join('Imagens', 'inicio_skins_padrao.jpg')))
+IMAGEM_BEGIN_SKINS_REI = (pygame.image.load(os.path.join('Imagens', 'inicio_skins_rei.jpg')))
+IMAGEM_BEGIN_SKINS_MAGO = (pygame.image.load(os.path.join('Imagens', 'inicio_skins_mago.jpg')))
+IMAGEM_BEGIN_SKINS_ASTRONAUTA = (pygame.image.load(os.path.join('Imagens', 'inicio_skins_astronauta.jpg')))
 IMAGEM_BEGIN_AI = (pygame.image.load(os.path.join('Imagens', 'inicio_ai.jpg')))
 IMAGEM_BEGIN_PLAYER = (pygame.image.load(os.path.join('Imagens', 'inicio_player.jpg')))
 IMAGEM_PONTUACAO = (pygame.image.load(os.path.join('Imagens', 'tela_quando_perde_pontos.jpg')))
@@ -41,10 +53,25 @@ IMAGEM_PAUSADO_QUIT = (pygame.image.load(os.path.join('Imagens', 'tela_pausado_q
 IMAGEM_CANO = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'pipe.png')))
 IMAGEM_CHAO = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'base.png')))
 IMAGEM_BACKGROUND = pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bg.png')))
-IMAGENS_PASSARO = [
-    pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird1.png'))),
-    pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird2.png'))),
-    pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird3.png'))),
+IMAGENS_PASSARO_PADRAO = [
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird1.png'))),
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird2.png'))),
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird3.png')))
+]
+IMAGENS_PASSARO_REI = [
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird_rei1.png'))),
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird_rei2.png'))),
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird_rei3.png')))
+]
+IMAGENS_PASSARO_MAGO = [
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird_mago1.png'))),
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird_mago2.png'))),
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird_mago3.png')))
+]
+IMAGENS_PASSARO_ASTRONAUTA = [
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird_nauta1.png'))),
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird_nauta2.png'))),
+        pygame.transform.scale2x(pygame.image.load(os.path.join('Imagens', 'bird_nauta3.png')))
 ]
 
 pygame.font.init()
@@ -52,21 +79,27 @@ caminho_fonte = os.path.join('fonts', 'PixelOperator8.ttf')
 FONTE_PONTOS = pygame.font.Font(caminho_fonte, 25)
 
 def salvar_dados_csv(lista_genomas, pontos, geracao_num):
-    arquivo_csv = 'dados_genomas.csv'
+    arquivo_csv = 'dados_genomas5.csv'
     file_exists = os.path.isfile(arquivo_csv)
+
     with open(arquivo_csv, mode='a', newline='') as arquivo:
         writer = csv.writer(arquivo)
+
+        # Escrever cabeçalho se o arquivo não existir
         if not file_exists:
             writer.writerow(["Geracao", "ID_Genoma", "Fitness", "Pontos"])
+
+        # Escrever dados de cada genoma
         for genoma in lista_genomas:
-            writer.writerow(["Geracao", "ID_Genoma", "Fitness", "Pontos"])
+            writer.writerow([geracao_num, genoma.key, genoma.fitness, pontos])
+
 
 class Passaro:
-    IMGS = IMAGENS_PASSARO
+    IMGS = IMAGENS_PASSARO_PADRAO
     # animações da rotação
     ROTACAO_MAXIMA = 25
-    VELOCIDADE_ROTACAO = 20
-    TEMPO_ANIMACAO = 5
+    VELOCIDADE_ROTACAO = 25
+    TEMPO_ANIMACAO = 3
 
     def __init__(self, x, y):
         self.x = x
@@ -79,7 +112,7 @@ class Passaro:
         self.imagem = self.IMGS[0]
 
     def pular(self, pontuacao):
-        self.velocidade = -10.5 * Cano.VELOCIDADE_ATUAL
+        self.velocidade = -12.0 * Cano.VELOCIDADE_ATUAL
         self.tempo = 0
         self.altura = self.y
 
@@ -101,7 +134,7 @@ class Passaro:
     def mover(self):
         # calcular o deslocamento
         self.tempo += 1
-        deslocamento = 1.5 * (self.tempo**2) + self.velocidade * self.tempo
+        deslocamento = 1.8 * (self.tempo**2) + self.velocidade * self.tempo
 
         # restringir o deslocamento
         if deslocamento > 14:
@@ -149,6 +182,20 @@ class Passaro:
     def get_mask(self):
         return pygame.mask.from_surface(self.imagem)
 
+
+
+    def alterar_skin(self, nova_skin):
+        if nova_skin == "bird":
+            self.IMGS = IMAGENS_PASSARO_PADRAO
+        elif nova_skin == "bird_rei":
+            self.IMGS = IMAGENS_PASSARO_REI
+        elif nova_skin == "bird_mago":
+            self.IMGS = IMAGENS_PASSARO_MAGO
+        elif nova_skin == "bird_nauta":
+            self.IMGS = IMAGENS_PASSARO_ASTRONAUTA
+
+        # Redefinir a imagem atual após mudar a skin
+        self.imagem = self.IMGS[0]
 
 
 class Cano:
@@ -255,6 +302,7 @@ class Chao:
 def desenhar_tela(tela, passaros, canos, chao, pontos):
     tela.blit(IMAGEM_BACKGROUND, (0, 0))
     for passaro in passaros:
+        passaro.alterar_skin(skin_local)
         passaro.desenhar(tela)
     for cano in canos:
         cano.desenhar(tela)
@@ -273,42 +321,128 @@ def desenhar_tela(tela, passaros, canos, chao, pontos):
     chao.desenhar(tela)
     pygame.display.update()
 
-def tela_inicio(tela):
-    global ai_jogando  # Adicione esta linha
-    rodando = True
-    escolha = 0
-    while rodando:
-        tela.blit(IMAGEM_BEGIN, (0, 0))
+def tela_inicio_escolha_jogar(tela, rodando):
+    global ai_jogando
+    escolha_jogar = 0
 
-        if escolha == 1:
-            tela.blit(IMAGEM_BEGIN_ESCOLHA, (0, 0))
-        elif escolha == 2:
+    while rodando:
+        tela.blit(IMAGEM_BEGIN_ESCOLHA_JOGAR, (0, 0))
+
+        if escolha_jogar == 1:
             tela.blit(IMAGEM_BEGIN_AI, (0, 0))
-        elif escolha == 3:
+        elif escolha_jogar == 2:
             tela.blit(IMAGEM_BEGIN_PLAYER, (0, 0))
 
         pygame.display.update()
 
+        for sub_evento in pygame.event.get():
+            if sub_evento.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            elif sub_evento.type == pygame.KEYDOWN:
+                if sub_evento.key == pygame.K_LEFT:
+                    selecionar.play()
+                    escolha_jogar = 1
+
+                elif sub_evento.key == pygame.K_RIGHT:
+                    selecionar.play()
+                    escolha_jogar = 2
+
+                elif sub_evento.key == pygame.K_RETURN:
+                    if escolha_jogar == 1:
+                        ai_jogando = True
+                        rodando = False
+                    elif escolha_jogar == 2:
+                        ai_jogando = False
+                        rodando = False
+
+skin_local = "bird"
+
+def tela_inicio_skins(tela,rodando):
+    escolha_skins = 0
+    global skin_local
+
+    while rodando:
+        tela.blit(IMAGEM_BEGIN_SKINS, (0, 0))
+
+        if escolha_skins == 1:
+            tela.blit(IMAGEM_BEGIN_SKINS_PADRAO, (0, 0))
+        elif escolha_skins == 2:
+            tela.blit(IMAGEM_BEGIN_SKINS_REI, (0, 0))
+        elif escolha_skins == 3:
+            tela.blit(IMAGEM_BEGIN_SKINS_MAGO, (0, 0))
+        elif escolha_skins == 4:
+            tela.blit(IMAGEM_BEGIN_SKINS_ASTRONAUTA, (0, 0))
+
+        pygame.display.update()
+
+        for sub_evento in pygame.event.get():
+            if sub_evento.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            elif sub_evento.type == pygame.KEYDOWN:
+                if sub_evento.key == pygame.K_RIGHT:
+                    selecionar.play()
+                    escolha_skins += 1
+                elif sub_evento.key == pygame.K_LEFT:
+                    selecionar.play()
+                    escolha_skins -= 1
+                elif sub_evento.key == pygame.K_RETURN:
+                    if escolha_skins == 1:
+                        skin_local = "bird"
+                        rodando = False
+                    elif escolha_skins == 2:
+                        skin_local  = "bird_rei"
+                        rodando = False
+                    elif escolha_skins == 3:
+                        skin_local = "bird_mago"
+                        rodando = False
+                    elif escolha_skins == 4:
+                        skin_local = "bird_nauta"
+                        rodando = False
+
+def tela_inicio(tela):
+    rodando = True
+    escolha = 0
+
+    while rodando:
+        tela.blit(IMAGEM_BEGIN, (0, 0))
+
+        # Exibe a seleção atual
+        if escolha == 1:
+            tela.blit(IMAGEM_BEGIN_ESCOLHA, (0, 0))
+        elif escolha == 2:
+            tela.blit(IMAGEM_BEGIN_ESCOLHA_PLAY, (0, 0))
+        elif escolha == 3:
+            tela.blit(IMAGEM_BEGIN_ESCOLHA_SKINS, (0, 0))
+
+        pygame.display.update()
+
+        # Processa eventos
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+
             elif evento.type == pygame.KEYDOWN:  # Verifica se houve pressionamento de tecla
                 if evento.key == pygame.K_SPACE:
-                    escolha = 1
-                elif evento.key == pygame.K_LEFT:
+                    escolha = 1  # Aumenta a escolha para não congelar
+                elif evento.key == pygame.K_UP:
                     selecionar.play()
                     escolha = 2
-                elif evento.key == pygame.K_RIGHT:
+                elif evento.key == pygame.K_DOWN:
                     selecionar.play()
                     escolha = 3
-                elif evento.key == pygame.K_RETURN:
-                    if escolha == 2:
-                        ai_jogando = True
+
+
+                if evento.key == pygame.K_RETURN:
+                    if escolha == 2:  # Jogar
+                        tela_inicio_escolha_jogar(tela, rodando)
                         rodando = False
-                    elif escolha == 3:
-                        ai_jogando = False
-                        rodando = False
+
+                    elif escolha == 3:  # Skins
+                        tela_inicio_skins(tela, rodando)
+
 
 def tela_pausada(tela):
     rodando = True
@@ -395,14 +529,18 @@ def tela_fim(tela, pontos):
                         pygame.quit()
                         quit()
 
-def main(genomas, config):
 
+
+def main(genomas, config):
+    Cano.resetar_velocidade()
     pygame.mixer.music.play(-1, 2)
     global geracao
 
     redes = []
     lista_genomas = []
-    passaros = [Passaro(230, 350)]
+
+    passaros = [Passaro(240, 340)]
+
 
     if ai_jogando:
         geracao += 1
@@ -412,7 +550,8 @@ def main(genomas, config):
             redes.append(rede)
             genoma.fitness = 0
             lista_genomas.append(genoma)
-            passaros.append(Passaro(230, 350))
+            passaros.append(Passaro(240, 340))
+
 
     chao = Chao(730)
     canos = [Cano(700)]
@@ -424,6 +563,7 @@ def main(genomas, config):
     rodando = True
     while rodando:
         relogio.tick(30)
+        salvar_dados_csv(lista_genomas, pontos, geracao)
 
         # interação com o usuário
         for evento in pygame.event.get():
@@ -442,6 +582,8 @@ def main(genomas, config):
                     pygame.mixer.music.stop()
                     perdeu.play()
                     tela_fim(tela,pontos)
+
+
             if not ai_jogando:
                 if evento.type == pygame.KEYDOWN:
                     if evento.key == pygame.K_SPACE:
@@ -518,6 +660,20 @@ def main(genomas, config):
                     pygame.mixer.music.stop()
                     perdeu.play()
 
+                    for i, passaro in enumerate(passaros):
+                        if (passaro.y + passaro.imagem.get_height()) > chao.y or passaro.y < 0:
+                            passaros.pop(i)
+                            if ai_jogando:
+                                lista_genomas[i].fitness -= 1
+                                lista_genomas.pop(i)
+                                redes.pop(i)
+                            if not ai_jogando or len(passaros) == 0:
+                                pygame.mixer.music.stop()
+                                tela_fim(tela, pontos)
+                                if ai_jogando:
+                                    salvar_dados_csv(lista_genomas, pontos, geracao)  # Salvando os dados da IA
+                                return
+
         for i in reversed(passaros_a_remover):
             passaros.pop(i)
             if ai_jogando:
@@ -531,6 +687,8 @@ def main(genomas, config):
     # Tela de fim
     if not ai_jogando:
         tela_fim(tela, pontos)
+    else:
+        salvar_dados_csv(lista_genomas, pontos, geracao)  # Salvando os dados da IA
 
 def rodar(caminho_config):
     config = neat.config.Config(neat.DefaultGenome,
@@ -542,6 +700,8 @@ def rodar(caminho_config):
     populacao = neat.Population(config)
     populacao.add_reporter(neat.StdOutReporter(True))
     populacao.add_reporter(neat.StatisticsReporter())
+    estatisticas = neat.StatisticsReporter()
+    populacao.add_reporter(estatisticas)
 
     if ai_jogando:
         populacao.run(main, 50)
