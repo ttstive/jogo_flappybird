@@ -19,9 +19,9 @@ dados3 = pd.read_csv("dados_genomas3.csv")
 dados1 = pd.read_csv("dados_genomas1.csv")
 dados5 = pd.read_csv("dados_genomas4.csv")
 dados6 = pd.read_csv("dados_genomas5.csv")
-dados7 = pd.read_csv("dados_genomas7.csv")
-dados8 = pd.read_csv("dados_genomas8.csv")
-dados9 = pd.read_csv("dados_genomas9.csv")
+dados7 = pd.read_csv("dados_genomas6.csv")
+dados8 = pd.read_csv("dados_genomas7.csv")
+dados9 = pd.read_csv("dados_genomas8.csv")
 
 # Adicionando uma coluna para identificar o tamanho da população
 dados['Pop_Size'] = '3'
