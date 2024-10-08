@@ -1,4 +1,4 @@
-'import streamlit as st
+import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -100,4 +100,3 @@ submit_button = st.button("Enviar")
 
 if submit_button:
     st.write("Obrigado pelo seu feedback!")
-'
